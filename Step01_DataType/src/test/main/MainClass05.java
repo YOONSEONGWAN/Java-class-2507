@@ -26,6 +26,6 @@ public class MainClass05 {
 		//변수 안에 참조값이 들어가는 참조 데이터 type인 String(id가 들어감)
 		String yourName="해골";
 		
-		num.
+		
 	}
 }
