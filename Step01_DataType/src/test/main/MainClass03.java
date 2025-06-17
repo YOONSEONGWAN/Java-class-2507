@@ -4,7 +4,7 @@ package test.main;
  * 2. 논리형(boolean)
  * 
  * - true, false 둘 중 하나
- * - true, false를 직접 쓰거나 비교연산 혹은 논리 연산의 결과로 얻어낼 수 있다.
+ * - true, false 를 직접 쓰거나 비교연산 혹은 논리 연산의 결과로 얻어낼 수 있다.
  * - 참과 거짓을 나타래려는 데이터타입
  */
 
