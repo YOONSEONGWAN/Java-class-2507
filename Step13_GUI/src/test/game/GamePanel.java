@@ -120,7 +120,7 @@ public class GamePanel extends JPanel {
 		g.setColor(Color.yellow);
 		g.drawString("count: "+count, 10, 20);
 		
-		// n번 카운트마다 바뀌도록
+		// n 번 카운트마다 바뀌도록
 		if(count%25 == 0) {
 		
 		// 드래곤 유닛 인덱스 1 증가
