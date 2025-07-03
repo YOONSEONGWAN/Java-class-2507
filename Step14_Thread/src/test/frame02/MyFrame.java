@@ -41,6 +41,7 @@ public class MyFrame extends JFrame {
 		startBtn2.addActionListener((e)->{
 			// Thread 객체를 생성하면서, Runnable type 을 전달하고
 			// 해당 객체의 start() 메소드를 호출하면 새 작업단위가 시작됨
+			System.out.println("10초 걸리는 작업을 시작합니다.");
 			new Thread(new WorkRunnable());
 		});
 		

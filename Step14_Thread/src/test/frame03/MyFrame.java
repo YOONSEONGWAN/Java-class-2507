@@ -41,7 +41,7 @@ public class MyFrame extends JFrame {
 		startBtn2.addActionListener((e)->{
 			// 메소드가 하나짜리기 때문에 가능
 			// Runnable 인터페이스는 run 메소드 하나이기 때문에 함수 			모양으로 객체를 만들 수 있다.
-			// new Runnable(){ public void run(); }; => ()->{}; 
+			// new Runnable(){ public void run(){}; }; => ()->{}; 
 			new Thread(()->{
 				// 여기는 Runnable type 객체의 run() 메소드 내부이다
 				// 누를 대마다 새로운 객체가 생성+쓰레드가 생성
