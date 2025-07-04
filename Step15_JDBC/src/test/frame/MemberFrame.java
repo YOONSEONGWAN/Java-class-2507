@@ -6,6 +6,7 @@ import java.awt.Color;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 
@@ -36,16 +37,25 @@ public class MemberFrame extends JFrame {
 		// JButton 
 		JButton insertBtn=new JButton("저장");
 		
+		
+		
 		insertBtn.addActionListener((e)->{
+			// 1. MemberDto 객체에 이름과 주소 담기
 			MemberDto dto=new MemberDto();
+			// 2. 입력한 이름과 주소를 읽어와서 
 			dto.setName(inputName.getText());
 			dto.setAddr(inputAddr.getText());
+			
+			// MemberDao 객체를 생성해 DB 에 담기
 			MemberDao dao=new MemberDao();
 			boolean isSuccess=dao.insert(dto);
 			if(isSuccess) {
-				System.out.println(inputName.getText()+"님의 정보를 성공적으로 저장했습니다.");
+				// this 는 나의 참조값 MemberFrame 이다. 
+				// 당연히 프레임에 띄워야지
+				// MemberFrame 은 컴포넌트 타입이기도 하다 
+				JOptionPane.showMessageDialog(this, "추가 했습니다.");
 			}else {
-				System.out.println("저장 실패");
+				JOptionPane.showMessageDialog(this, "추가 실패다.");
 			}
 			});
 		
