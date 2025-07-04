@@ -2,13 +2,18 @@ package test.frame;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Font;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.table.DefaultTableModel;
 
 import test.dao.MemberDao;
 import test.dto.MemberDto;
@@ -21,6 +26,13 @@ public class MemberFrame extends JFrame {
 	 */
 	// 필요한 필드 정의하기
 	JTextField inputName, inputAddr;
+	// ㅌ1.표 형식으로 정보를 출력할 UI
+	JTable table;
+	// ㅌ2. JTable 에 출력할 data 를 공급해 줄 모델 객체
+	// JTable -> model -> 출력
+	DefaultTableModel model;
+	// ㅌ10. dao 를 사용하니 미리 변수로 지정해두기. 필드에는 var 사용불가
+	MemberDao dao=new MemberDao();
 	
 	
 	// 생성자에서 초기화 작업
@@ -36,9 +48,11 @@ public class MemberFrame extends JFrame {
 		
 		// JButton 
 		JButton insertBtn=new JButton("저장");
+		JButton deleteBtn=new JButton("삭제");
+		JButton updateBtn=new JButton("수정");
 		
 		
-		
+		// 버튼의 동작
 		insertBtn.addActionListener((e)->{
 			// 1. MemberDto 객체에 이름과 주소 담기
 			MemberDto dto=new MemberDto();
@@ -59,6 +73,42 @@ public class MemberFrame extends JFrame {
 			}
 			});
 		
+		// ㅅ1. 삭제버튼 눌렀을 때 실행할 함수 
+		deleteBtn.addActionListener((e)->{
+			// ㅅ2. 선택된 row 의 index 값을 읽어옴
+			int selectedRow=table.getSelectedRow();
+			// ㅅ3. 만일 선택된 row 가 없다면
+			if(selectedRow == -1) {
+				JOptionPane.showMessageDialog(this, "삭제할 row 를 선택해 주세요!"); 
+				// true 값이면 return 시켜서 메소드 종료 시켜야함
+				return;
+			}
+			// ㅅ4. 삭제할 회원의 Primary key 값(번호)를 읽어와서
+			int num=(int)model.getValueAt(selectedRow, 0);
+			// DB 에서 삭제한다
+			dao.deleteByNum(num);
+			// ㅅ6. DB에서 회원 정보를 다시 읽어와서 출력 
+			this.printMember();
+			
+		});
+		// ㅇ1. 업데이트 눌렀을 떄 실행할 함수 
+		updateBtn.addActionListener((e)->{
+			int selectedRow=table.getSelectedRow();
+			if(selectedRow == -1) {
+				JOptionPane.showMessageDialog(this, "수정할 row 를 선택해 주세요!");
+				// true 값이면 return 시켜서 메소드 종료 시켜야함
+				return;
+			}
+			int num=(int)model.getValueAt(selectedRow, 0);
+			
+			MemberDto dto=new MemberDto();
+			dto.setName(inputName.getText());
+			dto.setAddr(inputAddr.getText());
+			dto.setNum(num);
+			dao.update(dto);
+			this.printMember();
+		});
+		
 		// 패널에 UI 배치
 		JPanel panel=new JPanel();
 		panel.add(lable1);
@@ -66,14 +116,86 @@ public class MemberFrame extends JFrame {
 		panel.add(lable2);
 		panel.add(inputAddr);
 		panel.add(insertBtn);
+		panel.add(deleteBtn);
+		panel.add(updateBtn);
+		
 		// 패널의 배경색 설정
 		panel.setBackground(Color.orange);
 		// 패널을 프레임의 위쪽에 배치
 		add(panel, BorderLayout.NORTH);
 		
+		// ㅌ3. 회원 목록을 출력할 테이블
+		table=new JTable();
+		// 테이블의 칼럼명을 배열로 미리 준비한다.
+		String[] colNames= {"번호", "이름", "주소"};
+		// 테이블에 연결 할 모델 객체
+		model=new DefaultTableModel();
+		// 모델에 칼럼 명을 전달한다.
+		model.setColumnIdentifiers(colNames);
+		model.setRowCount(0); // 처음에는 row 가 없도록 한다.
+		// ㅌ6. 모델을 테이블에 연결
+		table.setModel(model);
+		
+		// ㅌ11. 테이블의 글차 크기와 행의 높이 조절
+		table.getTableHeader().setFont(new Font("Sans-serif", 		Font.BOLD, 18)); 
+		table.setFont(new Font("Sans-serif", Font.PLAIN, 		16)); // 데이터 글자 크기 14
+		table.setRowHeight(25); // 각 행의 높이를 조정
+		
+		// ㅌ4. row 가 많은 경우 스크롤도 할 수 있어야 한다.
+		JScrollPane scroll = new JScrollPane(table);
+		// ㅌ5. 테이블을 품고 있는 JScrollPane 을 프레임의 가운데에 		배치하기
+		add(scroll, BorderLayout.CENTER);
+		
+		// ㅌ7. sample data 를 출력하기
+		//Object[] row1= {0, "sample name", "sample addr"};
+		//model.addRow(row1);
+		// ㅌ8. MemberDao 객체를 이용해서 회원목록을 얻어온 다음
+		// 실제 회원 목록을 table 에 반복문 돌면서 출력해보기 (생성자에서 		하면 딱 맞다) ㅇ
+		
+		
+		List<MemberDto> memberlist=new MemberDao().selectAll();
+		//selectAll은 배열타입을 리턴하지 않음 List<MemberDto> 리턴
+		// 오브젝트 배열 얻어내기. Dto 객체 하나당 하나의 Object[] 을 		만들어서 모델에 추가
+		for(MemberDto tmp : memberlist) {
+			Object[] memrow= { // 무슨 타입이든 가능
+					tmp.getNum(),
+					tmp.getName(),
+					tmp.getAddr()
+			};
+			model.addRow(memrow);
+		}
+		// ㅌ9. 방법2 
+		/*
+		 for(MemberDto tmp : memberlist) {
+			
+		
+			model.addRow(new Object[] {
+					tmp.getNum(),
+					tmp.getName(),
+					tmp.getAddr()
+			});
+		}
+		*/
 		
 		
 	}
+	// 회원 목록을 출력하는 메소드
+	public void printMember() {
+		model.setRowCount(0);
+		List<MemberDto> memberlist=new MemberDao().selectAll();
+		//selectAll은 배열타입을 리턴하지 않음 List<MemberDto> 리턴
+		// 오브젝트 배열 얻어내기. Dto 객체 하나당 하나의 Object[] 을 		만들어서 모델에 추가
+		for(MemberDto tmp : memberlist) {
+			Object[] memrow= { // 무슨 타입이든 가능
+					tmp.getNum(),
+					tmp.getName(),
+					tmp.getAddr()
+			};
+			model.addRow(memrow);
+		}
+	}
+	
+	
 	
 	public static void main(String[] args) {
 		MemberFrame f=new MemberFrame();
