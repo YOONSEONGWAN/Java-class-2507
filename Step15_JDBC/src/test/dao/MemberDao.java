@@ -30,7 +30,7 @@ public class MemberDao {
 			String sql = """
 					SELECT NAME, ADDR
 					FROM MEMBER
-					WHERE NUM
+					WHERE NUM = ?
 					""";
 			pstmt = conn.prepareStatement(sql);
 			// ?? 에 값 바인딩

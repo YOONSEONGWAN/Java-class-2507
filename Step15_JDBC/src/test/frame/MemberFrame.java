@@ -13,6 +13,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
 import test.dao.MemberDao;
@@ -71,6 +72,7 @@ public class MemberFrame extends JFrame {
 			}else {
 				JOptionPane.showMessageDialog(this, "추가 실패다.");
 			}
+			this.printMember();
 			});
 		
 		// ㅅ1. 삭제버튼 눌렀을 때 실행할 함수 
@@ -86,28 +88,93 @@ public class MemberFrame extends JFrame {
 			// ㅅ4. 삭제할 회원의 Primary key 값(번호)를 읽어와서
 			int num=(int)model.getValueAt(selectedRow, 0);
 			// DB 에서 삭제한다
-			dao.deleteByNum(num);
+			boolean isSuccess=dao.deleteByNum(num);
+			
+			
 			// ㅅ6. DB에서 회원 정보를 다시 읽어와서 출력 
-			this.printMember();
+			
+			if(isSuccess) {
+				// this 는 나의 참조값 MemberFrame 이다. 
+				// 당연히 프레임에 띄워야지
+				// MemberFrame 은 컴포넌트 타입이기도 하다 
+				JOptionPane.showMessageDialog(this, "삭제 했습니다.");
+				this.printMember();
+			}else {
+				JOptionPane.showMessageDialog(this, "삭제 실패다.");}
 			
 		});
-		// ㅇ1. 업데이트 눌렀을 떄 실행할 함수 
+		
+		
+		
+		// ㅇ1. 업데이트 눌렀을 때 실행할 함수 
 		updateBtn.addActionListener((e)->{
+			
 			int selectedRow=table.getSelectedRow();
+			
 			if(selectedRow == -1) {
 				JOptionPane.showMessageDialog(this, "수정할 row 를 선택해 주세요!");
 				// true 값이면 return 시켜서 메소드 종료 시켜야함
 				return;
 			}
 			int num=(int)model.getValueAt(selectedRow, 0);
+			MemberDto dto=dao.getByNum(num);
+			//MemberDto dto=new MemberDto();
+			// ㅇ2. 수정양식 UI 를 JPanel 로 구성한다.
+			var inputName=new JTextField(10);
+			var inputAddr=new JTextField(10);
+			JPanel editPanel=new JPanel();
+			editPanel.add(new JLabel("이름: "));
+			editPanel.add(inputName);
+			editPanel.add(new JLabel("주소: "));
+			editPanel.add(inputAddr);
+			// ㅇ4. MemberDto 에 있는 정보를 JTextField 에 출력
+			inputName.setText(dto.getName());
+			inputAddr.setText(dto.getAddr());
 			
-			MemberDto dto=new MemberDto();
+			
+			// ㅇ3.JPanel 을 전달하면서 ConfirmDialog 를 따온다.
+			int result=JOptionPane.showConfirmDialog(
+					this, 
+					editPanel, 
+					num+" 번 회원 수정",
+					JOptionPane.OK_CANCEL_OPTION
+					);
+			// ㅇ5. 리턴되는 숫자값을 텍스트로 콘솔창에 출력하기
+			System.out.println(result); 
+			//ㅇ5-1. 버튼마다 값이 있다.
+			// ㅇ6. 만일 확인 버튼을 누르면 ... 
+			// static final 상수를 이용하여 가독성 향상
+			if(result == JOptionPane.OK_OPTION) {
+				// ㅇ7. 입력한 이름과 주소를 읽어와서
+				String name=inputName.getText();
+				String addr=inputAddr.getText();
+				// 수정, 반영한다.
+				MemberDto newDto=new MemberDto();
+				newDto.setNum(num);
+				newDto.setName(name);
+				newDto.setAddr(addr);
+				boolean isSuccess=dao.update(newDto);
+				if(isSuccess) {
+				// this 는 나의 참조값 MemberFrame 이다. 
+				// 당연히 프레임에 띄워야지
+				// MemberFrame 은 컴포넌트 타입이기도 하다 
+				JOptionPane.showMessageDialog(this, "수정 했습니다.");
+				this.printMember();
+			}else {
+				JOptionPane.showMessageDialog(this, "수정 실패다.");
+			}
 			dto.setName(inputName.getText());
 			dto.setAddr(inputAddr.getText());
 			dto.setNum(num);
 			dao.update(dto);
-			this.printMember();
+			
+			
+			}
+			
 		});
+		
+		
+		
 		
 		// 패널에 UI 배치
 		JPanel panel=new JPanel();
@@ -135,6 +202,15 @@ public class MemberFrame extends JFrame {
 		model.setRowCount(0); // 처음에는 row 가 없도록 한다.
 		// ㅌ6. 모델을 테이블에 연결
 		table.setModel(model);
+		
+		// 셀 가운데 정렬용 렌더러 만들기
+		DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+		centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+
+		// 테이블 전체 열에 적용
+		for (int i = 0; i < table.getColumnCount(); i++) {
+		    table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);
+		}
 		
 		// ㅌ11. 테이블의 글차 크기와 행의 높이 조절
 		table.getTableHeader().setFont(new Font("Sans-serif", 		Font.BOLD, 18)); 
