@@ -1,16 +1,24 @@
 package test.frame;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Font;
+import java.util.List;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
+import test.dao.MemberDao;
 import test.dao.TeaDao;
+import test.dto.MemberDto;
+import test.dto.TeaDto;
 
 public class TeaFrame extends JFrame {
 	//NUM, NAME, COLOR, SCENT, TASTE_SUMMARY, TASTE_RICHNESS, TASTE_WEIGHT, TASTE_DETAIL, EVALUATION
@@ -61,13 +69,45 @@ public class TeaFrame extends JFrame {
 		topPanel.add(deleteBtn);
 		topPanel.add(updateBtn);
 		
-        
- 		
+		topPanel.setBackground(Color.gray);
+		add(topPanel, BorderLayout.NORTH);
+		table=new JTable();
+		String[] colNames= {"이름", "색상", "향기", "맛_총점", "맛의강도", "무게감", "세부묘사", "총평 및 추가기재"};
+		model=new DefaultTableModel();
+		model.setColumnIdentifiers(colNames);
+		model.setRowCount(0);
+		table.setModel(model);
+		
+		DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+		centerRenderer.setHorizontalAlignment(JLabel.CENTER);
+		for (int i = 0; i < table.getColumnCount(); i++) {
+	table.getColumnModel().getColumn(i).setCellRenderer(centerRenderer);}
+		
+		table.getTableHeader().setFont(new Font("Sans-serif", Font.BOLD, 18)); 
+		table.setFont(new Font("Sans-serif", Font.PLAIN, 16)); // 데이터 글자 크기 14
+		table.setRowHeight(25); // 각 행의 높이를 조정
+		JScrollPane scroll = new JScrollPane(table);
+		add(scroll, BorderLayout.CENTER);
  		
  		// 3. 수정하기
 	}
 	public void printTea() {
-		
+		model.setRowCount(0);
+		List<TeaDto> tealist=new TeaDao().selectAll();
+		for(TeaDto tmp : tealist) {
+			Object[] tearow= {
+					tmp.getNum(),
+					tmp.getName(),
+					tmp.getColor(),
+					tmp.getScent(),
+					tmp.getTasteSummary(),
+					tmp.getTasteRichness(),
+					tmp.getTasteWeight(),
+					tmp.getTasteDetail(),
+					tmp.getEvaluation()
+				};
+				model.addRow(tearow);
+			}
 	}
 	
 	
